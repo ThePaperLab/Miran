@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: Miran Paper Webhook
+  version: 1.0.0
+paths:
+  /miran-hook:
+    post:
+      summary: Pubblica una conversazione approvata nel canale Telegram
+      operationId: pubblicaConversazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domanda:
+                  type: string
+                risposta:
+                  type: string
+                timestamp:
+                  type: string
+      responses:
+        '200':
+          description: Pubblicazione avvenuta con successo
