@@ -1,12 +1,14 @@
 from flask import Flask, request
 import telegram
 import os
+import requests
 from datetime import datetime
+import tempfile
 
 app = Flask(__name__)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID", "@miranpaper")  # Sostituisci con il tuo canale reale se diverso
+CHANNEL_ID = os.getenv("CHANNEL_ID", "@miranpaper")  # Sostituisci se necessario
 bot = telegram.Bot(token=BOT_TOKEN)
 
 @app.route('/miran-hook', methods=['POST'])
@@ -21,12 +23,23 @@ def ricevi_e_pubblica():
 
     try:
         if immagine_url:
-            bot.send_photo(
-                chat_id=CHANNEL_ID,
-                photo=immagine_url,
-                caption=caption,
-                parse_mode=telegram.ParseMode.MARKDOWN
-            )
+            response = requests.get(immagine_url, stream=True)
+            if response.status_code == 200:
+                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                    for chunk in response.iter_content(1024):
+                        tmp_file.write(chunk)
+                    tmp_file_path = tmp_file.name
+
+                with open(tmp_file_path, 'rb') as photo:
+                    bot.send_photo(
+                        chat_id=CHANNEL_ID,
+                        photo=photo,
+                        caption=caption,
+                        parse_mode=telegram.ParseMode.MARKDOWN
+                    )
+                os.remove(tmp_file_path)
+            else:
+                return {'status': 'error', 'details': 'Immagine non scaricabile'}, 400
         else:
             bot.send_message(
                 chat_id=CHANNEL_ID,
