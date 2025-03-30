@@ -6,6 +6,8 @@ from telegram.ext import (
 )
 from uuid import uuid4
 import threading
+import asyncio
+
 
 # Flask App per ricevere storie
 flask_app = Flask(__name__)
@@ -36,7 +38,7 @@ def publish_story():
             f"_Timestamp:_ {timestamp}"
         )
 
-        bot.send_message(chat_id=CHANNEL_ID, text=text, parse_mode=constants.ParseMode.MARKDOWN)
+        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=text, parse_mode=constants.ParseMode.MARKDOWN))
         return jsonify({"status": "ok"}), 200
 
     except Exception as e:
