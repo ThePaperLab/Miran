@@ -1,0 +1,31 @@
+openapi: 3.1.0
+info:
+  title: Miran Paper Publisher
+  version: 2.0.0
+servers:
+  - url: https://miran-0uep.onrender.com
+paths:
+  /publish:
+    post:
+      summary: Pubblica una storia testuale sul canale Telegram di Miran Paper
+      operationId: pubblicaStoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domanda:
+                  type: string
+                risposta:
+                  type: string
+                timestamp:
+                  type: string
+      responses:
+        "200":
+          description: Storia pubblicata con successo
+        "400":
+          description: Richiesta malformata o mancante
+        "500":
+          description: Errore interno del server
