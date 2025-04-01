@@ -28,7 +28,11 @@ def publish():
     data = request.get_json()
     risposta = data.get("risposta", "").strip()
     if risposta:
-        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=risposta))
+        loop = asyncio.get_event_loop()
+        asyncio.run_coroutine_threadsafe(
+            bot.send_message(chat_id=CHANNEL_ID, text=risposta),
+            loop
+        )
     return "", 200
 
 # Avvio app Flask come web service
