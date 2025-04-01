@@ -22,8 +22,11 @@ bot = Bot(BOT_TOKEN)
 app = Flask(__name__)
 pending_requests = {}
 
+application = Application.builder().token(BOT_TOKEN).build()
+
 # /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("🟢 Comando /start ricevuto")
     await update.message.reply_text(
         "Benvenutə nel nodo visivo di Miran.\n"
         "Inviami un'immagine per proporla al flusso collettivo.\n"
@@ -58,6 +61,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Gestione altro
 async def handle_other(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("⚠️ Messaggio non visivo ricevuto")
     await update.message.reply_text(
         "Interazione non conforme.\n"
         "Questo nodo accetta soltanto frammenti visivi.\n"
@@ -99,8 +103,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Prova con un altro frammento. O aspetta che cambino i venti."
         ))
 
-# Setup del bot
-application = Application.builder().token(BOT_TOKEN).build()
+# Setup handler
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 application.add_handler(MessageHandler(~filters.PHOTO, handle_other))
@@ -129,13 +132,17 @@ def publish():
 def webhook():
     data = request.get_json()
     update = Update.de_json(data, bot)
-    asyncio.run(handle_update(update))
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(application.initialize())
+        loop.run_until_complete(application.process_update(update))
+        loop.run_until_complete(application.shutdown())
+        loop.close()
+    except Exception as e:
+        logger.error(f"Errore nella gestione update: {e}")
     return "", 200
 
-# Funzione unificata di gestione update
-async def handle_update(update: Update):
-    await application.initialize()
-    await application.process_update(update)
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    logger.info("🚀 Server in avvio su porta 10000")
+    app.run(host="0.0.0.0", port=10000, debug=True)
