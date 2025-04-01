@@ -33,7 +33,7 @@ def publish():
     try:
         data = request.get_json()
         risposta = data.get("risposta", "")
-        text = f"🧩 Una nuova tessera narrativa\n\n{risposta}"
+        text = f"*Una nuova tessera narrativa*\n\n{risposta}"
         asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=text))
         return "OK", 200
     except Exception as e:
