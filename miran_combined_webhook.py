@@ -15,6 +15,7 @@ from telegram.ext import (
     filters,
 )
 from uuid import uuid4
+import telegram.error
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@miranpaper")
@@ -22,14 +23,14 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 bot = Bot(BOT_TOKEN)
 flask_app = Flask(__name__)
-application = application = (
+application = (
     ApplicationBuilder()
     .token(BOT_TOKEN)
-    .connection_pool_size(30)  # ← aumentato
-    .pool_timeout(60)          # ← aumentato
+    .concurrent_updates(True)
+    .pool_timeout(60)
+    .connection_pool_size(30)
     .build()
 )
-
 application_initialized = False
 
 PENDING_REQUESTS = {}
@@ -129,14 +130,20 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     file_id, user_id = data
     if action == "approve":
-        await context.bot.send_photo(chat_id=CHANNEL_ID, photo=file_id)
-        await query.edit_message_caption("✅ Immagine pubblicata.")
-        await context.bot.send_message(
-            chat_id=user_id,
-            text="Il Custode ha vagliato. L’immagine è passata.\n"
-                 "È stata pubblicata nel flusso visivo collettivo.\n"
-                 "Canale: https://t.me/MiranPaper"
-        )
+        try:
+            await context.bot.send_photo(chat_id=CHANNEL_ID, photo=file_id)
+            await query.edit_message_caption("✅ Immagine pubblicata.")
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="Il Custode ha vagliato. L’immagine è passata.\n"
+                     "È stata pubblicata nel flusso visivo collettivo.\n"
+                     "Canale: https://t.me/MiranPaper"
+            )
+        except telegram.error.TimedOut:
+            await context.bot.send_message(
+                chat_id=ADMIN_ID,
+                text="⚠️ Errore: connessione esaurita. Riprova tra qualche secondo."
+            )
     else:
         await query.edit_message_caption("🚫 Pubblicazione annullata.")
         await context.bot.send_message(
