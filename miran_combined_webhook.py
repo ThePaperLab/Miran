@@ -18,8 +18,7 @@ CHANNEL_ID = os.getenv("CHANNEL_ID", "@miranpaper")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))  # ID numerico Telegram dell'admin
 
 # Ottimizzazione connessione Telegram
-custom_request = HTTPXRequest(
-    pool_limits=Limits(max_connections=40, max_keepalive_connections=20),
+custom_request = HTTPXRequest(),
     connect_timeout=20.0,
     read_timeout=20.0
 )
