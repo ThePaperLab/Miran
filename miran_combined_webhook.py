@@ -38,7 +38,8 @@ def publish():
         domanda = data.get("domanda", "")
         risposta = data.get("risposta", "")
         timestamp = data.get("timestamp", "")
-        text = f"*🧩 Una nuova tessera narrativa:*"                
+        text = f"*🧩 Una nuova tessera narrativa:*" 
+        "{risposta}"             
         asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=text, parse_mode=constants.ParseMode.MARKDOWN))
         return "OK", 200
     except Exception as e:
