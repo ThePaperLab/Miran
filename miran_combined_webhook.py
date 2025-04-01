@@ -46,12 +46,18 @@ def webhook():
     try:
         data = request.get_json(force=True)
         update = Update.de_json(data, bot)
-        asyncio.run(application.process_update(update))
+
+        async def handle():
+            await application.initialize()
+            await application.process_update(update)
+
+        asyncio.run(handle())
         return "OK", 200
     except Exception as e:
         print("❌ Errore nel webhook:")
         traceback.print_exc()
         return "Errore", 500
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🌱 Benvenutə nel nodo visivo di Miran. Inviami un’immagine per iniziare.")
