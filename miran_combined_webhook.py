@@ -132,7 +132,12 @@ def webhook():
     asyncio.run(application.process_update(update))
     return "", 200
 
+# Avvio combinato
 if __name__ == "__main__":
-    application.initialize()
-    logger.info("✅ Application inizializzata")
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    async def main():
+        await application.initialize()
+        await application.start()
+        logger.info("✅ Telegram bot avviato")
+        app.run(host="0.0.0.0", port=10000, debug=True)
+
+    asyncio.run(main())
