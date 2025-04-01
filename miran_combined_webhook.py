@@ -22,7 +22,14 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 bot = Bot(BOT_TOKEN)
 flask_app = Flask(__name__)
-application = ApplicationBuilder().token(BOT_TOKEN).build()
+application = application = (
+    ApplicationBuilder()
+    .token(BOT_TOKEN)
+    .connection_pool_size(30)  # ← aumentato
+    .pool_timeout(60)          # ← aumentato
+    .build()
+)
+
 application_initialized = False
 
 PENDING_REQUESTS = {}
