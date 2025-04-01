@@ -1,22 +1,38 @@
 import os
 from flask import Flask, request
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, constants
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
-from telegram.request import HTTPXRequest
+from telegram import Bot, Update, InputFile, InlineKeyboardButton, InlineKeyboardMarkup, constants
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 import asyncio
 from uuid import uuid4
 
-# Config
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))  # Inserisci qui il tuo ID Telegram
-CHANNEL_ID = os.getenv("CHANNEL_ID", "@miranpaper")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID numerico
+CHANNEL_ID = os.getenv("CHANNEL_ID")
 
-# Flask app
 app = Flask(__name__)
-application = None
+bot = Bot(BOT_TOKEN)
 pending_requests = {}
 
-# Bot Handlers
+@app.route('/')
+def index():
+    return 'Miran Paper webhook attivo.'
+
+@app.route('/publish', methods=['POST'])
+def publish():
+    data = request.get_json()
+    risposta = data.get("risposta", "").strip()
+    if risposta:
+        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text="📜 Una nuova tessera narrativa"))
+        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=risposta))
+    return '', 200
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json()
+    update = Update.de_json(data, bot)
+    asyncio.create_task(application.process_update(update))
+    return '', 200
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Benvenutə nel nodo visivo di Miran.
@@ -34,19 +50,12 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pending_requests[request_id] = (file_id, user_id)
 
     keyboard = [
-        [
-            InlineKeyboardButton("✅ Pubblica", callback_data=f"approve|{request_id}"),
-            InlineKeyboardButton("❌ Annulla", callback_data=f"reject|{request_id}")
-        ]
+        [InlineKeyboardButton("✅ Pubblica", callback_data=f"approve|{request_id}"),
+         InlineKeyboardButton("❌ Rifiuta", callback_data=f"reject|{request_id}")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await context.bot.send_photo(
-        chat_id=ADMIN_ID,
-        photo=file_id,
-        caption="🖼️ Vuoi pubblicare questa immagine sul canale?",
-        reply_markup=reply_markup
-    )
+    await bot.send_photo(chat_id=ADMIN_ID, photo=file_id, caption="🖼️ Vuoi pubblicare questa immagine sul canale?", reply_markup=reply_markup)
 
     await update.message.reply_text(
         "Hai mandato un’immagine. Non male.
@@ -88,9 +97,9 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_id, user_id = data
 
     if action == "approve":
-        await context.bot.send_photo(chat_id=CHANNEL_ID, photo=file_id)
+        await bot.send_photo(chat_id=CHANNEL_ID, photo=file_id)
         await query.edit_message_caption("✅ Immagine pubblicata.")
-        await context.bot.send_message(
+        await bot.send_message(
             chat_id=user_id,
             text="Il Custode ha vagliato. L’immagine è passata.
 "
@@ -102,7 +111,7 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         await query.edit_message_caption("🚫 Pubblicazione annullata.")
-        await context.bot.send_message(
+        await bot.send_message(
             chat_id=user_id,
             text="L’Occhio Terzo ha parlato.
 "
@@ -117,45 +126,14 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  "Prova con un altro frammento. O aspetta che cambino i venti."
         )
 
-# Flask Routes
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    if request.method == "POST":
-        update = Update.de_json(request.get_json(force=True), application.bot)
-        asyncio.create_task(application.process_update(update))
-    return "OK"
-
-@app.route("/publish", methods=["POST"])
-def publish_text():
-    data = request.get_json()
-    risposta = data.get("risposta", "").strip()
-    if not risposta:
-        return "Nessun contenuto", 400
-
-    asyncio.create_task(application.bot.send_message(
-        chat_id=CHANNEL_ID,
-        text="📜 *Una nuova tessera narrativa:*
-
-" + risposta,
-        parse_mode=constants.ParseMode.MARKDOWN
-    ))
-    return "OK"
-
-# Setup
 def setup_bot():
     global application
-    request_config = HTTPXRequest(connect_timeout=20.0, read_timeout=20.0)
-    application = ApplicationBuilder().token(BOT_TOKEN).request(request_config).build()
-
+    application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     application.add_handler(MessageHandler(~filters.PHOTO, handle_other))
     application.add_handler(CallbackQueryHandler(handle_approval))
 
-    asyncio.create_task(application.initialize())
-    asyncio.create_task(application.start())
-
-# Run
 if __name__ == "__main__":
     setup_bot()
     app.run(host="0.0.0.0", port=10000)
