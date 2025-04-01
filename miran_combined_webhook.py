@@ -30,6 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("📸 Ricevuta immagine da:", update.message.from_user.username)
     photo = update.message.photo[-1]
     file_id = photo.file_id
     user_id = update.message.from_user.id
@@ -134,17 +135,20 @@ def publish_story():
         return {"error": str(e)}, 500
 
 if __name__ == "__main__":
+    import asyncio
+
+    # Registra gli handler
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     application.add_handler(MessageHandler(~filters.PHOTO, handle_other))
     application.add_handler(CallbackQueryHandler(handle_approval))
 
-    bot.set_webhook(url=WEBHOOK_URL)
-
-    # ATTIVA la gestione degli update in arrivo
-    import asyncio
+    # Imposta il webhook
     asyncio.run(application.initialize())
-    application.start()
+    asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
 
-    # Avvia Flask
+    # Avvia il processing degli update
+    application.run_async()
+
+    # Avvia il server Flask
     flask_app.run(host="0.0.0.0", port=10000)
