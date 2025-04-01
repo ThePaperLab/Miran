@@ -105,14 +105,10 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Gestione contenuti non immagine
 async def handle_other(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Interazione non conforme.
-"
-        "Questo nodo accetta soltanto frammenti visivi.
-"
-        "Altri segnali saranno ignorati.
-"
-        "Se cerchi parole, storie o risposte, devi varcare un’altra soglia:
-"
+        "Interazione non conforme."
+        "Questo nodo accetta soltanto frammenti visivi."
+        "Altri segnali saranno ignorati."
+        "Se cerchi parole, storie o risposte, devi varcare un’altra soglia:"
         "→ https://chatgpt.com/g/g-67defc5af8f88191a4a3e593921b46be-miran-paper"
     )
 
@@ -131,28 +127,20 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_caption("✅ Immagine pubblicata.")
         await bot.send_message(
             chat_id=user_id,
-            text="Il Custode ha vagliato. L’immagine è passata.
-"
-                 "È stata pubblicata nel flusso visivo collettivo.
-"
-                 "Canale: https://t.me/MiranPaper
-"
+            text="Il Custode ha vagliato. L’immagine è passata."
+                 "È stata pubblicata nel flusso visivo collettivo."
+                 "Canale: https://t.me/MiranPaper"
                  "Un’altra tessera si aggiunge al mosaico."
         )
     else:
         await query.edit_message_caption("🚫 Pubblicazione annullata.")
         await bot.send_message(
             chat_id=user_id,
-            text="L’Occhio Terzo ha parlato.
-"
-                 "L’immagine è stata trattenuta.
-"
-                 "Non verrà pubblicata.
-"
-                 "Motivo segnalato: incongruenza narrativa
-"
-                 "(ma potrebbe anche solo aver avuto una brutta giornata).
-"
+            text="L’Occhio Terzo ha parlato."
+                 "L’immagine è stata trattenuta."
+                 "Non verrà pubblicata."
+                 "Motivo segnalato: incongruenza narrativa"
+                 "(ma potrebbe anche solo aver avuto una brutta giornata)."
                  "Prova con un altro frammento. O aspetta che cambino i venti."
         )
 
