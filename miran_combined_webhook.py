@@ -140,4 +140,11 @@ if __name__ == "__main__":
     application.add_handler(CallbackQueryHandler(handle_approval))
 
     bot.set_webhook(url=WEBHOOK_URL)
+
+    # ATTIVA la gestione degli update in arrivo
+    import asyncio
+    asyncio.run(application.initialize())
+    application.start()
+
+    # Avvia Flask
     flask_app.run(host="0.0.0.0", port=10000)
