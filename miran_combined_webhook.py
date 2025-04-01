@@ -52,10 +52,8 @@ async def handle_update(update: Update):
 # /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Benvenutə nel nodo visivo di Miran.
-"
-        "Inviami un'immagine per proporla al flusso collettivo.
-"
+        "Benvenutə nel nodo visivo di Miran."
+        "Inviami un'immagine per proporla al flusso collettivo."
         "Tutto passa prima attraverso l’Occhio Terzo."
     )
 
@@ -77,30 +75,21 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await bot.send_photo(chat_id=ADMIN_ID, photo=file_id, caption="🖼️ Vuoi pubblicare questa immagine sul canale?", reply_markup=reply_markup)
 
     await update.message.reply_text(
-        "Hai mandato un’immagine. Non male.
-"
-        "Ma non posso caricarla così, sai com’è.
-"
-        "Prima deve passare il Giudizio dell’Occhio Terzo.
-"
-        "Un essere umano — o qualcosa che gli somiglia — la guarderà, ci rifletterà, magari prenderà un caffè.
-"
-        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati.
-"
+        "Hai mandato un’immagine. Non male."
+        "Ma non posso caricarla così, sai com’è."
+        "Prima deve passare il Giudizio dell’Occhio Terzo."
+        "Un essere umano — o qualcosa che gli somiglia — la guarderà, ci rifletterà, magari prenderà un caffè."
+        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati."
         "Ti aggiorno appena si muove qualcosa nell’ombra della moderazione."
     )
 
 # Gestione altro
 async def handle_other(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Interazione non conforme.
-"
-        "Questo nodo accetta soltanto frammenti visivi.
-"
-        "Altri segnali saranno ignorati.
-"
-        "Se cerchi parole, storie o risposte, devi varcare un’altra soglia:
-"
+        "Interazione non conforme."
+        "Questo nodo accetta soltanto frammenti visivi."
+        "Altri segnali saranno ignorati."
+        "Se cerchi parole, storie o risposte, devi varcare un’altra soglia:"
         "→ https://chatgpt.com/g/g-67defc5af8f88191a4a3e593921b46be-miran-paper"
     )
 
@@ -121,27 +110,19 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await bot.send_photo(chat_id=CHANNEL_ID, photo=file_id)
         await query.edit_message_caption("✅ Immagine pubblicata.")
         await bot.send_message(chat_id=user_id, text=(
-            "Il Custode ha vagliato. L’immagine è passata.
-"
-            "È stata pubblicata nel flusso visivo collettivo.
-"
-            "Canale: https://t.me/MiranPaper
-"
+            "Il Custode ha vagliato. L’immagine è passata."
+            "È stata pubblicata nel flusso visivo collettivo."
+            "Canale: https://t.me/MiranPaper"
             "Un’altra tessera si aggiunge al mosaico."
         ))
     else:
         await query.edit_message_caption("🚫 Pubblicazione annullata.")
         await bot.send_message(chat_id=user_id, text=(
-            "L’Occhio Terzo ha parlato.
-"
-            "L’immagine è stata trattenuta.
-"
-            "Non verrà pubblicata.
-"
-            "Motivo segnalato: incongruenza narrativa
-"
-            "(ma potrebbe anche solo aver avuto una brutta giornata).
-"
+            "L’Occhio Terzo ha parlato."
+            "L’immagine è stata trattenuta."
+            "Non verrà pubblicata."
+            "Motivo segnalato: incongruenza narrativa"
+            "(ma potrebbe anche solo aver avuto una brutta giornata)."
             "Prova con un altro frammento. O aspetta che cambino i venti."
         ))
 
