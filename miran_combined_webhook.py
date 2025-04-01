@@ -54,6 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("📸 Ricevuta immagine!")
     photo = update.message.photo[-1]
     file_id = photo.file_id
     user_id = update.message.from_user.id
