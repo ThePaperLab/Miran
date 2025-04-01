@@ -3,6 +3,7 @@ import logging
 from flask import Flask, request
 from telegram import Bot
 import asyncio
+from threading import Thread
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +19,10 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")
 # Telegram bot
 bot = Bot(BOT_TOKEN)
 
-# Flask route
+# Crea un event loop globale
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
 @app.route("/")
 def index():
     return "Miran Paper webhook attivo."
@@ -28,13 +32,17 @@ def publish():
     data = request.get_json()
     risposta = data.get("risposta", "").strip()
     if risposta:
-        loop = asyncio.get_event_loop()
         asyncio.run_coroutine_threadsafe(
             bot.send_message(chat_id=CHANNEL_ID, text=risposta),
             loop
         )
     return "", 200
 
-# Avvio app Flask come web service
 if __name__ == "__main__":
+    def run_loop():
+        loop.run_forever()
+
+    t = Thread(target=run_loop, daemon=True)
+    t.start()
+
     app.run(host="0.0.0.0", port=10000, debug=True)
