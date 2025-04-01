@@ -22,7 +22,6 @@ def publish():
     data = request.get_json()
     risposta = data.get("risposta", "").strip()
     if risposta:
-        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text="📜 Una nuova tessera narrativa"))
         asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=risposta))
     return '', 200
 
