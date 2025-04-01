@@ -120,11 +120,8 @@ def publish():
     data = request.get_json()
     risposta = data.get("risposta", "").strip()
     if risposta:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(bot.send_message(chat_id=CHANNEL_ID, text="Una nuova tessera narrativa"))
-        loop.run_until_complete(bot.send_message(chat_id=CHANNEL_ID, text=risposta))
-        loop.close()
+        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text="Una nuova tessera narrativa"))
+        asyncio.run(bot.send_message(chat_id=CHANNEL_ID, text=risposta))
     return "", 200
 
 # Webhook per il bot
@@ -132,17 +129,13 @@ def publish():
 def webhook():
     data = request.get_json()
     update = Update.de_json(data, bot)
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(application.initialize())
-        loop.run_until_complete(application.process_update(update))
-        loop.run_until_complete(application.shutdown())
-        loop.close()
-    except Exception as e:
-        logger.error(f"Errore nella gestione update: {e}")
+    asyncio.create_task(application.process_update(update))
     return "", 200
 
 if __name__ == "__main__":
-    logger.info("🚀 Server in avvio su porta 10000")
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    async def main():
+        await application.initialize()
+        logger.info("✅ Application inizializzata")
+        app.run(host="0.0.0.0", port=10000, debug=True)
+
+    asyncio.run(main())
