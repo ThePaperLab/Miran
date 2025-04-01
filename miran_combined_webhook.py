@@ -94,16 +94,11 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text(
-        "Hai mandato un’immagine. Non male.
-"
-        "Ma non posso caricarla così, sai com’è.
-"
-        "Prima deve passare il Giudizio dell’Occhio Terzo.
-"
-        "Un essere umano — o qualcosa che gli somiglia — la guarderà, ci rifletterà, magari prenderà un caffè.
-"
-        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati.
-"
+        "Hai mandato un’immagine. Non male."
+        "Ma non posso caricarla così, sai com’è."
+        "Prima deve passare il Giudizio dell’Occhio Terzo."
+        "Un essere umano — o qualcosa che gli somiglia — la guarderà, ci rifletterà, magari prenderà un caffè."
+        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati."
         "Ti aggiorno appena si muove qualcosa nell’ombra della moderazione."
     )
 
