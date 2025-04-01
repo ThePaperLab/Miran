@@ -118,6 +118,5 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(application.initialize())
     loop.run_until_complete(bot.set_webhook(WEBHOOK_URL))
-    application.run_async()
 
     flask_app.run(host="0.0.0.0", port=10000)
