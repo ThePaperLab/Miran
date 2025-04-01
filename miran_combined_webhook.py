@@ -129,13 +129,10 @@ def publish():
 def webhook():
     data = request.get_json()
     update = Update.de_json(data, bot)
-    asyncio.create_task(application.process_update(update))
+    asyncio.run(application.process_update(update))
     return "", 200
 
 if __name__ == "__main__":
-    async def main():
-        await application.initialize()
-        logger.info("✅ Application inizializzata")
-        app.run(host="0.0.0.0", port=10000, debug=True)
-
-    asyncio.run(main())
+    application.initialize()
+    logger.info("✅ Application inizializzata")
+    app.run(host="0.0.0.0", port=10000, debug=True)
