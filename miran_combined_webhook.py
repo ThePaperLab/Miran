@@ -124,7 +124,15 @@ def setup_bot():
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     application.add_handler(MessageHandler(~filters.PHOTO, handle_other))
     application.add_handler(CallbackQueryHandler(handle_approval))
-    application.initialize()
-    application.start()
+    import asyncio
+
+async def run_bot():
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+    await application.updater.idle()
+
+asyncio.run(run_bot())
+
 
 setup_bot()
