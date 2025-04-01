@@ -1,25 +1,33 @@
+
 import os
-from flask import Flask, request, jsonify
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, constants
-from telegram.ext import (
-    ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
-)
-from uuid import uuid4
-import threading
 import asyncio
+from flask import Flask, request, jsonify
+from telegram import Bot, constants
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+    filters,
+)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from uuid import uuid4
 
-
-# Flask App per ricevere storie
-flask_app = Flask(__name__)
-
+# Variabili d'ambiente
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(BOT_TOKEN)
+flask_app = Flask(__name__)
 PENDING_REQUESTS = {}
 
-# === FLASK ROUTE per il GPTs ===
+# Flask endpoint per il GPTs
+@flask_app.route("/")
+def index():
+    return "Miran webhook attivo"
+
 @flask_app.route("/publish", methods=["POST"])
 def publish_story():
     try:
@@ -44,11 +52,7 @@ def publish_story():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@flask_app.route("/", methods=["GET"])
-def health():
-    return "Webhook attivo per storie e immagini.", 200
-
-# === TELEGRAM BOT HANDLERS ===
+# Bot Telegram (immagini)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Benvenutə nel nodo visivo di Miran.\n"
@@ -80,18 +84,18 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "Hai mandato un’immagine. Non male.\n"
-        "Ma non posso caricarla così, sai com’è.\n"
+        "Ma non posso caricarla così, sai com’è.\n\n"
         "Prima deve passare il Giudizio dell’Occhio Terzo.\n"
         "Un essere umano — o qualcosa che gli somiglia — la guarderà, ci rifletterà, magari prenderà un caffè.\n"
-        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati.\n"
+        "Poi deciderà se è degna del canale o se finirà tra i ricordi non pubblicati.\n\n"
         "Ti aggiorno appena si muove qualcosa nell’ombra della moderazione."
     )
 
 async def handle_other(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Interazione non conforme.\n"
+        "Interazione non conforme.\n\n"
         "Questo nodo accetta soltanto frammenti visivi.\n"
-        "Altri segnali saranno ignorati.\n"
+        "Altri segnali saranno ignorati.\n\n"
         "Se cerchi parole, storie o risposte, devi varcare un’altra soglia:\n"
         "→ https://chatgpt.com/g/g-67defc5af8f88191a4a3e593921b46be-miran-paper"
     )
@@ -100,8 +104,8 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     action, request_id = query.data.split("|")
-    data = PENDING_REQUESTS.pop(request_id, None)
 
+    data = PENDING_REQUESTS.pop(request_id, None)
     if not data:
         await query.edit_message_caption("❌ Richiesta non valida o già gestita.")
         return
@@ -115,27 +119,22 @@ async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=user_id,
             text="Il Custode ha vagliato. L’immagine è passata.\n"
                  "È stata pubblicata nel flusso visivo collettivo.\n"
-                 "Canale: https://t.me/MiranPaper\n"
+                 "Canale: https://t.me/MiranPaper\n\n"
                  "Un’altra tessera si aggiunge al mosaico."
         )
     else:
         await query.edit_message_caption("🚫 Pubblicazione annullata.")
         await context.bot.send_message(
             chat_id=user_id,
-            text="L’Occhio Terzo ha parlato.\n"
+            text="L’Occhio Terzo ha parlato.\n\n"
                  "L’immagine è stata trattenuta.\n"
-                 "Non verrà pubblicata.\n"
+                 "Non verrà pubblicata.\n\n"
                  "Motivo segnalato: incongruenza narrativa\n"
-                 "(ma potrebbe anche solo aver avuto una brutta giornata).\n"
+                 "(ma potrebbe anche solo aver avuto una brutta giornata).\n\n"
                  "Prova con un altro frammento. O aspetta che cambino i venti."
         )
 
-# Avvio multiplo: Flask + Bot
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    flask_app.run(host="0.0.0.0", port=port)
-
-def run_telegram():
+def run_bot():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
@@ -144,5 +143,6 @@ def run_telegram():
     app.run_polling()
 
 if __name__ == "__main__":
-    threading.Thread(target=run_flask).start()
-    run_telegram()
+    import threading
+    threading.Thread(target=run_bot).start()
+    flask_app.run(host="0.0.0.0", port=10000)
